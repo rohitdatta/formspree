@@ -14,7 +14,7 @@ class TestFormCreationFromDashboard(FormspreeTestCase):
 
     @httpretty.activate
     def test_form_creation(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # register user
         r = self.client.post('/register',
@@ -93,7 +93,7 @@ class TestFormCreationFromDashboard(FormspreeTestCase):
 
     @httpretty.activate
     def test_form_creation_with_a_registered_email(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # register user
         r = self.client.post('/register',
@@ -107,7 +107,7 @@ class TestFormCreationFromDashboard(FormspreeTestCase):
         DB.session.commit()
 
         httpretty.reset()
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # create form without providing an url should not send verification email
         r = self.client.post('/forms',
@@ -196,7 +196,7 @@ class TestFormCreationFromDashboard(FormspreeTestCase):
         self.assertEqual(form.host, 'mysite.com')
 
         # submit form
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         r = self.client.post('/' + form.hashid,
             headers = {'Referer': 'http://www.mysite.com/hipopotamo', 'content-type': 'application/json'},
@@ -235,7 +235,7 @@ class TestFormCreationFromDashboard(FormspreeTestCase):
         self.assertEqual(form.host, 'naive.com')
 
         # submit form
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         r = self.client.post('/' + form.hashid,
             headers = {'Referer': 'http://naive.com/hipopotamo', 'content-type': 'application/json'},

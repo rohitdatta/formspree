@@ -21,7 +21,7 @@ class FormPostsTestCase(FormspreeTestCase):
 
     @httpretty.activate
     def test_submit_form(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
         self.client.post('/alice@example.com',
             headers = ajax_headers,
             data={'name': 'alice'}
@@ -30,7 +30,7 @@ class FormPostsTestCase(FormspreeTestCase):
 
     @httpretty.activate
     def test_second_form(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
         self.client.post('/bob@example.com',
             headers = ajax_headers,
             data={'name': 'bob'}
@@ -39,7 +39,7 @@ class FormPostsTestCase(FormspreeTestCase):
 
     @httpretty.activate    
     def test_fail_form_without_header(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
         httpretty.reset()
 
         no_referer = ajax_headers.copy()
@@ -53,7 +53,7 @@ class FormPostsTestCase(FormspreeTestCase):
 
     @httpretty.activate    
     def test_fail_but_appears_to_have_succeeded_with_gotcha(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # manually confirm
         r = self.client.post('/carlitos@example.com',
@@ -77,7 +77,7 @@ class FormPostsTestCase(FormspreeTestCase):
 
     @httpretty.activate    
     def test_fail_with_invalid_reply_to(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # manually confirm
         r = self.client.post('/carlitos@example.com',
@@ -112,7 +112,7 @@ class FormPostsTestCase(FormspreeTestCase):
 
     @httpretty.activate    
     def test_activation_workflow(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
         r = self.client.post('/bob@example.com',
             headers = ajax_headers,
             data={'name': 'bob'}
@@ -165,7 +165,7 @@ class FormPostsTestCase(FormspreeTestCase):
 
     @httpretty.activate
     def test_monthly_limits(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # monthly limit is set to 2 during tests
         self.assertEqual(settings.MONTHLY_SUBMISSIONS_LIMIT, 2)
@@ -182,7 +182,7 @@ class FormPostsTestCase(FormspreeTestCase):
         DB.session.commit()
 
         # first submission
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
         r = self.client.post('/luke@example.com',
             headers = ajax_headers,
             data={'name': 'peter'}
@@ -191,7 +191,7 @@ class FormPostsTestCase(FormspreeTestCase):
         self.assertIn('peter', httpretty.last_request().body)
 
         # second submission
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
         r = self.client.post('/luke@example.com',
             headers = ajax_headers,
             data={'name': 'ana'}
@@ -200,7 +200,7 @@ class FormPostsTestCase(FormspreeTestCase):
         self.assertIn('ana', httpretty.last_request().body)
 
         # third submission, now we're over the limit
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
         r = self.client.post('/luke@example.com',
             headers = ajax_headers,
             data={'name': 'maria'}
@@ -230,7 +230,7 @@ class FormPostsTestCase(FormspreeTestCase):
         DB.session.commit()
 
         # the user should receive form posts again
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
         r = self.client.post('/luke@example.com',
             headers = ajax_headers,
             data={'name': 'noah'}

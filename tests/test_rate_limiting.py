@@ -9,7 +9,7 @@ from formspree_test_case import FormspreeTestCase
 class RateLimitingTestCase(FormspreeTestCase):
     @httpretty.activate
     def test_rate_limiting_on_form_posts(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # confirm a form
         self.client.post('/alice@example.com',

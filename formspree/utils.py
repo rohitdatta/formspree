@@ -131,7 +131,7 @@ def send_email(to=None, subject=None, text=None, html=None, sender=None, cc=None
     log.info('Queuing message to %s' % str(to))
 
     result = requests.post(
-        'https://api.sendgrid.com/api/mail.send.json',
+        'https://api.sendgrid.com/v3/mail/send',
         data=data
     )
 

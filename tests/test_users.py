@@ -27,7 +27,7 @@ class UserAccountsTestCase(FormspreeTestCase):
 
     @httpretty.activate
     def test_user_auth(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # register
         r = self.client.post('/register',
@@ -69,7 +69,7 @@ class UserAccountsTestCase(FormspreeTestCase):
 
     @httpretty.activate
     def test_forgot_password(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # register
         r = self.client.post('/register',
@@ -112,7 +112,7 @@ class UserAccountsTestCase(FormspreeTestCase):
 
     @httpretty.activate
     def test_form_creation(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # register user
         r = self.client.post('/register',

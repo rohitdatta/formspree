@@ -12,7 +12,7 @@ from formspree_test_case import FormspreeTestCase
 class ArchiveSubmissionsTestCase(FormspreeTestCase):
     @httpretty.activate
     def test_automatically_created_forms(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # submit a form
         self.client.post('/alice@example.com',
@@ -156,7 +156,7 @@ class ArchiveSubmissionsTestCase(FormspreeTestCase):
 
     @httpretty.activate
     def test_upgraded_user_access(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # register user
         r = self.client.post('/register',

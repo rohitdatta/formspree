@@ -11,7 +11,7 @@ class ContentTypeTestCase(FormspreeTestCase):
 
     @httpretty.activate
     def test_various_content_types(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
         r = self.client.post('/bob@example.com',
             headers = {'Referer': 'http://example.com'},
             data={'name': 'bob'}

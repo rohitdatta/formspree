@@ -13,7 +13,7 @@ class EmailConfirmationsTestCase(FormspreeTestCase):
 
     @httpretty.activate
     def test_user_registers_and_adds_emails(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # register
         r = self.client.post('/register',
@@ -40,7 +40,7 @@ class EmailConfirmationsTestCase(FormspreeTestCase):
 
     @httpretty.activate
     def test_user_gets_previous_forms_assigned_to_him(self):
-        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/api/mail.send.json')
+        httpretty.register_uri(httpretty.POST, 'https://api.sendgrid.com/v3/mail/send')
 
         # verify a form for mark@example.com
         self.client.post('/mark@example.com',
