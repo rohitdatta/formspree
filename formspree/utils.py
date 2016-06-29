@@ -8,6 +8,8 @@ import re
 from datetime import timedelta
 from flask import make_response, current_app, request, url_for, jsonify
 from importlib import import_module
+import sendgrid
+from sendgrid.helpers.mail import *
 
 from formspree import settings, log
 
@@ -104,36 +106,31 @@ def send_email(to=None, subject=None, text=None, html=None, sender=None, cc=None
     if None in [to, subject, text, sender]:
         raise ValueError('to, subject text and sender are required to send email')
 
-    data = {'api_user': settings.SENDGRID_USERNAME,
-            'api_key': settings.SENDGRID_PASSWORD,
-            'to': to,
-            'subject': subject,
-            'text': text,
-            'html': html}
+    sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+    mail = Mail()
 
     # parse 'fromname' from 'sender' if it is formatted like "Name <name@email.com>"
     try:
         bracket = sender.index('<')
-        data.update({
-            'from': sender[bracket+1:-1],
-            'fromname': sender[:bracket].strip()
-        })
+        mail.set_from(Email(sender[bracket+1:-1], sender[:bracket].strip()))
     except ValueError:
-        data.update({'from': sender})
+        mail.set_from(Email(sender))
 
-    if reply_to:
-        data.update({'replyto': reply_to})
-
+    mail.set_subject(subject)
+    personalization = Personalization()
+    personalization.add_to(Email(to))
     if cc:
         valid_emails = [email for email in cc if IS_VALID_EMAIL(email)]
-        data.update({'cc': valid_emails})
+        map(lambda valid_email: personalization.add_cc(Email(valid_email)), valid_emails)
+    mail.add_personalization(personalization)
+    mail.add_content(Content('text/plain', text))
+    mail.add_content(Content('text/html', html))
+    if reply_to:
+        mail.set_reply_to(Email(reply_to))
 
     log.info('Queuing message to %s' % str(to))
 
-    result = requests.post(
-        'https://api.sendgrid.com/v3/mail/send',
-        data=data
-    )
+    result = sg.client.mail.send.post(request_body=mail.get())
 
     log.info('Queued message to %s' % str(to))
     errmsg = ""
