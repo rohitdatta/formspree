@@ -157,7 +157,7 @@ class UserAccountsTestCase(FormspreeTestCase):
             data={'name': 'bruce'}
         )
         self.assertIn("We've sent a link to your email", r.data)
-        self.assertIn('confirm+your+email', httpretty.last_request().body)
+        self.assertIn('confirm your email', httpretty.last_request().body)
         self.assertEqual(1, Form.query.count())
 
         # confirm form
