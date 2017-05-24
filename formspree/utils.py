@@ -115,12 +115,14 @@ def send_email(to=None, subject=None, text=None, html=None,
     if None in [to, subject, text, sender]:
         raise ValueError('to, subject text and sender required to send email')
 
-    data = {'api_user': settings.SENDGRID_USERNAME,
-            'api_key': settings.SENDGRID_PASSWORD,
-            'to': to,
+    data = {'to': to,
             'subject': subject,
             'text': text,
             'html': html}
+    headers = {
+        'Authorization': 'Bearer {}'.format(settings.SENDGRID_API_KEY),
+        'Content-Type': 'application/json'
+    }
 
     # parse 'fromname' from 'sender' if it is
     # formatted like "Name <name@email.com>"
@@ -141,8 +143,9 @@ def send_email(to=None, subject=None, text=None, html=None,
         data.update({'cc': valid_emails})
 
     result = requests.post(
-        'https://api.sendgrid.com/api/mail.send.json',
-        data=data
+        'https://api.sendgrid.com/v3/mail/send',
+        data=data,
+        headers=headers
     )
 
     g.log.info('Queued email.', to=to)
