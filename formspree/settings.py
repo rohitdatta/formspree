@@ -52,4 +52,5 @@ CONTACT_FORM_HASHID = os.getenv('CONTACT_FORM_HASHID', CONTACT_EMAIL)
 
 TYPEKIT_KEY = os.getenv('TYPEKIT_KEY', '1234567')
 
-CELERY_BROKER_URL = os.getenv('REDIS_URL')
+CELERY_BROKER_URL = os.getenv('REDIS_URL') or 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL') or 'redis://localhost:6379'
