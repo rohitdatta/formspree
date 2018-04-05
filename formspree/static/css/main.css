@@ -1002,6 +1002,38 @@ a.button.export {
   display: inline-block;
   margin: 0 0 20px 20px; }
 
+#add-bank-account .row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px; }
+#add-bank-account label {
+  font-size: 0.8em;
+  display: inline-block;
+  width: 150px;
+  text-align: right;
+  padding: 4px 17px 0 0; }
+#add-bank-account input[type="text"] {
+  display: inline-block;
+  width: 300px; }
+#add-bank-account .center-label {
+  margin: auto; }
+#add-bank-account select {
+  outline: 0;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  background-color: rgba(255, 255, 255, 0.2);
+  width: 300px;
+  padding: 5px 35px 5px 5px;
+  font-size: 16px;
+  height: 34px;
+  color: black;
+  font-weight: 300;
+  box-shadow: 0 0 0 1px rgba(50, 50, 93, 0.1), 0 2px 5px 0 rgba(50, 50, 93, 0.1), 0 1px 1.5px 0 rgba(0, 0, 0, 0.07), 0 1px 2px 0 rgba(0, 0, 0, 0.08), 0 0 0 0 transparent; }
+
 .slicknav_btn {
   position: relative;
   display: block;
@@ -1482,7 +1514,7 @@ span.code {
   background: #fff;
   font-size: 0.9em; }
 
-input, textarea {
+input, textarea, select {
   font-size: 0.8em;
   font-family: 'proxima-nova-soft', sans-serif;
   border: 1px solid #ddd;
@@ -1490,9 +1522,9 @@ input, textarea {
   padding: 0.9em;
   transition: all 0.3s ease-in-out;
   width: 100%; }
-  input.code, textarea.code {
+  input.code, textarea.code, select.code {
     font-family: "source-code-pro", monospace; }
-  input:focus, textarea:focus {
+  input:focus, textarea:focus, select:focus {
     border-color: #2A735B;
     outline: none;
     box-shadow: 0 0 5px 1px #359173; }

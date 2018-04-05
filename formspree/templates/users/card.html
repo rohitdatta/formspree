@@ -2,6 +2,9 @@
     <a href="#add-card" class="button">
       Add Card
     </a>
+	<a href="#add-bank-account" class="button right">
+	  Add Bank Account
+	</a>
     <div class="modal narrow" id="add-card" aria-hidden="true">
         <div class="container">
             <div class="x">
@@ -17,6 +20,48 @@
             </div>
         </div>
     </div>
+  	<div class="modal narrow" id="add-bank-account" aria-hidden="true">
+	  <div class="container">
+
+		<div class="x">
+		  <h4>Add Bank Account</h4><a href="#">&times;</a></div>
+		  <p style="clear: both;">We only accept U.S. checking accounts</p>
+{#		  In 4-5 business days, Forsmpree will temporarily deposit two small amounts in your bank account. You will need to verify these amounts to confirm your bank account.#}
+		<form method="POST" action="" id="bank-account-form">
+		  <div class="row">
+			<label for="account_holder_name">Name on account</label>
+			<input id="account_holder_name" name="account_holder_name" type="text">
+		  </div>
+
+		  <div class="row">
+			<label for="account_holder_type">Account holder type</label>
+			<select name="account_holder_type" id="account_holder_type">#}
+			  <option value="individual">Individual</option>
+			  <option value="company">Company</option>
+			</select>
+		  </div>
+
+		  <div class="row">
+			<label for="routing_number">Routing number</label>
+			<input id="routing_number" name="routing_number" type="text">
+		  </div>
+
+		  <div class="row">
+			<label for="account_number">Account number</label>
+			<input id="account_number" name="account_number" type="text">
+		  </div>
+
+		  <div class="row">
+			<label for="account_number_validate">Confirm account</label>
+			<input id="account_number_validate" name="account_number_validate" type="text">
+		  </div>
+
+		  <div class="col-1-1 small">
+                <p>Secured with <i class="fa fa-cc-stripe" aria-hidden="true"></i>. {{ config.SERVICE_NAME }} never sees your banking details</p>
+            </div>
+		</form>
+	  </div>
+	</div>
 </div>
 <script>
   var stripe = Stripe('{{ config.STRIPE_PUBLISHABLE_KEY }}');

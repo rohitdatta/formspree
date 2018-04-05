@@ -21,6 +21,7 @@ $error-red: #CC3F36;
 @import 'https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css';
 @import 'alertbox.scss';
 @import 'dashboard.scss';
+@import 'card.scss';
 @import 'nav.scss';
 @import 'toastr.scss';
 
@@ -191,7 +192,7 @@ span.code {
     font-size: 0.9em;
 }
 
-input, textarea {
+input, textarea, select {
     font-size: 0.8em;
     &.code {
         font-family: "source-code-pro", monospace;
