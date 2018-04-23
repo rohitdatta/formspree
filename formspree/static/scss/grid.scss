@@ -100,6 +100,15 @@
   width: 16.67%;
 }
 
+.col-half-margin-pad {
+  @include col;
+  width: 45%;
+  margin-left: 5%;
+  @media (max-width: 760px) {
+    margin-left: 0 !important;
+  }
+}
+
 @media print {
 
   .col-1-1 {

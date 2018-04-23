@@ -19,6 +19,7 @@ def configure_routes(app):
 
     # Users
     app.add_url_rule('/account', 'account', view_func=uv.account, methods=['GET'])
+    app.add_url_rule('/account/upgrade2', 'upgrade', view_func=uv.views.upgrade_new, methods=['GET', 'POST'])
     app.add_url_rule('/account/upgrade', 'account-upgrade', view_func=uv.upgrade, methods=['POST'])
     app.add_url_rule('/account/downgrade', view_func=uv.downgrade, methods=['POST'])
     app.add_url_rule('/account/resubscribe', view_func=uv.resubscribe, methods=['POST'])

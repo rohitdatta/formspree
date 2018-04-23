@@ -187,6 +187,8 @@ def reset_password(digest):
                   'process again.', 'error')
             return redirect(url_for('login', next=request.args.get('next')))
 
+def upgrade_new():
+    return render_template('users/upgrade.html')
 
 def upgrade():
     token = request.form['stripeToken']
