@@ -10,7 +10,7 @@ from formspree.stuff import DB, redis_store
 
 
 # the different redis database only accessed by flask-limiter
-rlredis = redis.StrictRedis.from_url(settings.REDIS_RATE_LIMIT)
+rlredis = redis.StrictRedis.from_url(settings.REDIS_RATE_LIMIT.decode('utf-8'))
 
 
 class FormspreeTestCase(TestCase):
