@@ -6,6 +6,7 @@ install:
   - pip install pipenv
   - pipenv install --dev --three
 script:
+  - export FLASK_APP=formspree
   - flask test
 addons:
   postgresql: "9.6"
