@@ -196,7 +196,7 @@ def upgrade_new():
         if 'client_secret' in request.args and 'source' in request.args:  # Callback from 3D Secure
             try:
                 stripe.Source.retrieve(request.args.get('source'), client_secret=request.args.get('client_secret'))
-                print 'foo' # poll for the source.status
+                print ('foo') # poll for the source.status
                 return render_template('users/upgrade_callback.html')
             except InvalidRequestError as e:
                 # Received invalid client secret
@@ -468,16 +468,8 @@ def stripe_webhook():
                        text=render_template('email/payment-failed.txt'),
                        html=render_template('email/payment-failed.html'),
                        sender=settings.DEFAULT_SENDER)
-<<<<<<< HEAD
-        return 'ok'
-    except ValueError as e:
-=======
         elif event['type'] == 'source.chargeable' and event['data']['object']['metadata']['customer']:
             return try_3d_payment(event)
-    except Exception as e:
->>>>>>> 40cc162... more billing updates
-        g.log.error('Webhook failed for customer', json=event, error=e)
-        return 'Failure, developer please check logs', 500
     except stripe.error.SignatureVerificationError as e:
         g.log.error('Webhook failed Stripe signature verification', json=event, error=e)
         return '', 400
