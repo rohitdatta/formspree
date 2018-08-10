@@ -1,5 +1,6 @@
 import stripe
 import datetime
+import calendar
 
 from flask import request, flash, url_for, render_template, redirect, g
 from flask_login import login_user, logout_user, \
@@ -10,7 +11,10 @@ from formspree import settings
 from formspree.stuff import DB
 from formspree.utils import send_email
 from .models import User, Email
-from .helpers import check_password, hash_pwd, send_downgrade_email
+from .helpers import check_password, hash_pwd, send_downgrade_email, normal_payment, card_state
+
+from stripe import InvalidRequestError
+import zipcodes
 
 
 def register():
@@ -188,7 +192,101 @@ def reset_password(digest):
             return redirect(url_for('login', next=request.args.get('next')))
 
 def upgrade_new():
-    return render_template('users/upgrade.html')
+    if request.method == 'GET':
+        if 'client_secret' in request.args and 'source' in request.args:  # Callback from 3D Secure
+            try:
+                stripe.Source.retrieve(request.args.get('source'), client_secret=request.args.get('client_secret'))
+                print 'foo' # poll for the source.status
+                return render_template('users/upgrade_callback.html')
+            except InvalidRequestError as e:
+                # Received invalid client secret
+                return render_template('error.html', title='Unable to complete Transaction',
+                                       text='We were unable to process your transaction, please try again later.'
+                                            'If this problem persists, please email {}'.format(
+                                             settings.CONTACT_EMAIL))
+        else:  # create the customer in stripe and make sure they aren't already upgraded
+            if current_user.stripe_id:
+                customer = stripe.Customer.retrieve(current_user.stripe_id)
+                sub = customer.subscriptions.data[0] if customer.subscriptions.data else None
+                if sub:
+                    flash("You've already upgraded to {} {}".format(settings.SERVICE_NAME, settings.UPGRADED_PLAN_NAME), 'success')
+                    return redirect(url_for('dashboard'))
+            else:
+                g.log.info('Will create a new subscription.')
+                customer = stripe.Customer.create(
+                    email=current_user.email,
+                    metadata={'formspree_id': current_user.id},
+                )
+                current_user.stripe_id = customer.id
+                DB.session.add(current_user)
+                DB.session.commit()
+            return render_template('users/upgrade.html')
+    else:
+        source_id = request.form['stripeSource']
+        sub = None
+
+        try:
+            if current_user.stripe_id:
+                customer = stripe.Customer.retrieve(current_user.stripe_id)
+            else:
+                g.log.info('Will create a new subscription.')
+                customer = stripe.Customer.create(
+                    email=current_user.email,
+                    metadata={'formspree_id': current_user.id},
+                )
+                current_user.stripe_id = customer.id
+
+            source = stripe.Source.retrieve(source_id)
+
+            use_3d_secure = source.card.three_d_secure in ['required'] # change to recommended and optional (?) later
+
+            if use_3d_secure:
+                # use 3D secure
+
+                source = stripe.Source.create(
+                    amount=999 if card_state(source_id=source_id) != 'TX' else 1081,
+                    currency='usd',
+                    type='three_d_secure',
+                    three_d_secure={
+                        'card': source_id,
+                    },
+                    redirect={
+                        'return_url': url_for('upgrade', _external=True)
+                    },
+                    metadata={
+                        'customer': current_user.stripe_id
+                    }
+                )
+
+                # check if it's a valid 3D secure, else proceed with normal payment flow
+                if (source.redirect.status == 'succeeded' and not source.three_d_secure.authenticated) or \
+                        source.status == 'failed':
+                    # Customer card not enrolled in 3D Secure or failure with 3D Secure
+                    # Proceed with a normal payment
+                    normal_payment(customer, source_id)
+                else:
+                    # Can proceed with 3DS, redirect to the redirect URL
+                    return redirect(source.redirect.url)
+            else:
+                normal_payment(customer, source_id)
+
+        except stripe.CardError as e:
+            g.log.warning("Couldn't charge card.", reason=e.json_body,
+                          status=e.http_status)
+            flash(u"Sorry. Your card could not be charged. Please contact us.",
+                  "error")
+            return redirect(url_for('upgrade'))
+
+        current_user.upgraded = True
+        DB.session.add(current_user)
+        DB.session.commit()
+        flash(u"Congratulations! You are now a {SERVICE_NAME} "
+              "{UPGRADED_PLAN_NAME} user!".format(**settings.__dict__),
+              'success')
+        g.log.info('Subscription created.')
+
+        return redirect(url_for('dashboard'))
+
 
 def upgrade():
     token = request.form['stripeToken']
@@ -287,6 +385,55 @@ def downgrade():
     g.log.info('Subscription canceled from dashboard.', account=current_user.email)
     return redirect(url_for('account'))
 
+def try_3d_payment(event):
+    # TODO: make sure that this order needs to actually be paid
+
+    # source_id = event['data']['object']['id']
+    source = event['data']['object']
+
+
+    # source_id = 'src_1CKJYhFIIR0ToW1D7OfsaY4Y'
+
+    # customer_id = 'cus_Cjn9lA9BspHPxN'
+    # customer = stripe.Customer.retrieve(customer_id)
+
+    if source['type'] == 'three_d_secure' and source['three_d_secure']['authenticated']:
+
+        customer_id = event['data']['object']['metadata']['customer']
+        customer = stripe.Customer.retrieve(customer_id)
+        sub = customer.subscriptions.data[0] if customer.subscriptions.data else None
+        if sub and sub['status'] != 'past_due':
+            # if customer has active subscription that's not past due
+            g.log.info('Customer has active subscription, no need to charge')
+            return 'ok'
+        try:
+            charge = stripe.Charge.create(
+                amount=999 if card_state(source_id=source['id']) != 'TX' else 1081,
+                currency='usd',
+                source=source['id']
+            )
+
+        except stripe.CardError as e:
+            g.log.warning("Couldn't charge card.", reason=e.json_body,
+                          status=e.http_status)
+            return 'Failed to charge card', 400
+
+        now = datetime.datetime.now()
+        sub = stripe.Subscription.create(
+            customer=customer_id,
+            plan='gold',
+            trial_period_days=calendar.monthrange(now.year, now.month)[1]
+        )
+
+        user = User.query.filter_by(stripe_id=customer_id).first()
+        user.upgraded = True
+        DB.session.add(user)
+        DB.session.commit()
+
+        # TODO: handle if the charge fails
+
+    return 'ok'
+
 
 def stripe_webhook():
     payload = request.data.decode('utf-8')
@@ -321,8 +468,14 @@ def stripe_webhook():
                        text=render_template('email/payment-failed.txt'),
                        html=render_template('email/payment-failed.html'),
                        sender=settings.DEFAULT_SENDER)
+<<<<<<< HEAD
         return 'ok'
     except ValueError as e:
+=======
+        elif event['type'] == 'source.chargeable' and event['data']['object']['metadata']['customer']:
+            return try_3d_payment(event)
+    except Exception as e:
+>>>>>>> 40cc162... more billing updates
         g.log.error('Webhook failed for customer', json=event, error=e)
         return 'Failure, developer please check logs', 500
     except stripe.error.SignatureVerificationError as e:

@@ -50,12 +50,12 @@
                             <input name="name" class="field" placeholder="Albert Einstein" required>
                         </label>
                         <label>
-                            <span>Email</span>
-                            <input name="email" type="email" class="field" placeholder="albert@email.com" required>
+                            <span>Street</span>
+                            <input name="address_line1" class="field" placeholder="1 Einstein Drive">
                         </label>
                         <label>
-                            <span>Address</span>
-                            <input name="address" class="field" placeholder="1 Einstein Drive Suite 150">
+                            <span>Line 2</span>
+                            <input name="address_line2" class="field" placeholder="Suite 150">
                         </label>
                         <label>
                             <span>City</span>
@@ -68,7 +68,7 @@
                         <label class="select">
                             <span>Country</span>
                             <div id="country" class="field US">
-                                <select name="country">
+                                <select name="country" id="select-country">
                                     <option value="AF">Afghanistan</option>
                                     <option value="AX">Aland Islands</option>
                                     <option value="AL">Albania</option>
@@ -387,6 +387,7 @@
         });
     </script>
     <script>
+        var user_email = "{{ current_user.email }}";
         var stripe = Stripe('{{ config.STRIPE_PUBLISHABLE_KEY }}');
         var elements = stripe.elements();
         var card = elements.create('card', {
@@ -407,6 +408,7 @@
         });
         card.mount('#card-element');
     </script>
+    <script src="{{ url_for('static', filename='js/payment.js') }}"></script>
 
 
 {% endblock %}
